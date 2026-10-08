@@ -1,6 +1,6 @@
 # Fee Payment Recordings App
 
-Offline-first web app for tracking school fees for **Bint Mariam** and **Rachel Wanjala** at **Rasual Al Amin Preparatory School**.
+Offline-first web app for tracking school fees for **Bint Mariam** and **Rachel Wanjala** at **Rasul Al Amin Preparatory School**.
 
 ## Files
 
@@ -39,8 +39,8 @@ Offline-first web app for tracking school fees for **Bint Mariam** and **Rachel 
 
 | Child | School | Class |
 |-------|--------|-------|
-| Bint Mariam | Rasual Al Amin Preparatory School | Grade 3 |
-| Rachel Wanjala | Rasual Al Amin Preparatory School | Playgroup |
+| Bint Mariam | Rasul Al Amin Preparatory School | Grade 3 |
+| Rachel Wanjala | Rasul Al Amin Preparatory School | Playgroup |
 
 ## Multi-user / Multi-device
 
