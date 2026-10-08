@@ -7,7 +7,7 @@
       {
         id: 'bint',
         name: 'Bint Mariam',
-        school: 'Rasual Al Amin Preparatory School',
+        school: 'Rasul Al Amin Preparatory School',
         class: 'Grade 3',
         fees: {
           2026: { yearly: 0, term1: 0, term2: 0, term3: 0 }
@@ -16,7 +16,7 @@
       {
         id: 'rachel',
         name: 'Rachel Wanjala',
-        school: 'Rasual Al Amin Preparatory School',
+        school: 'Rasul Al Amin Preparatory School',
         class: 'Playgroup',
         fees: {
           2026: { yearly: 0, term1: 0, term2: 0, term3: 0 }
