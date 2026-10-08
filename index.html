@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fee Payment Recordings App</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="logo-area">
+      <div class="logo">FP</div>
+      <div class="logo-text">
+        <h1>Fee Payment Recordings App</h1>
+        <p>Rasual Al Amin Preparatory School</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="year-selector">
+        <select id="yearSelect" onchange="switchYear(this.value)"></select>
+      </div>
+      <button class="btn btn-secondary" onclick="openPaymentModal()">+ Payment</button>
+      <button class="btn btn-secondary" onclick="exportPDF()">Export PDF</button>
+      <button class="btn btn-secondary" onclick="openSettings()">Settings</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Family Summary -->
+    <div class="summary-bar" id="familySummary"></div>
+
+    <!-- Current Term Focus -->
+    <div class="section-title">
+      <span>Current Term Overview — <span id="currentTermLabel">Term 3 2026</span></span>
+      <span style="font-size:0.85rem;font-weight:500;color:var(--muted)" id="todayDate"></span>
+    </div>
+
+    <!-- Child Cards -->
+    <div class="child-grid" id="childCards"></div>
+
+    <!-- Detailed View -->
+    <div class="section-title">
+      <span>Detailed Accounts & Payment History</span>
+    </div>
+    <div class="tabs" id="childTabs"></div>
+    <div id="detailPanels"></div>
+  </div>
+
+  <footer class="footer">
+    Fee Payment Recordings App • Offline-capable • Data stored locally on this device
+  </footer>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" id="paymentModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="paymentModalTitle">Record Payment</h3>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('paymentModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Child</label>
+          <select id="payChild"></select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Amount (KES)</label>
+            <input type="number" id="payAmount" min="1" step="1" required>
+          </div>
+          <div class="form-group">
+            <label>Payment Date</label>
+            <input type="date" id="payDate" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Method</label>
+            <select id="payMethod">
+              <option value="M-Pesa">M-Pesa</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cash">Cash</option>
+              <option value="Cheque">Cheque</option>
+              <option value="School Portal">School Portal</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Reference / Transaction No.</label>
+            <input type="text" id="payRef" placeholder="e.g. RHL7XK2P3Q">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Allocate to term</label>
+          <select id="payAllocate">
+            <option value="term1">Term 1</option>
+            <option value="term2">Term 2</option>
+            <option value="term3">Term 3</option>
+            <option value="arrears">Arrears (counts under Term 1)</option>
+          </select>
+          <small style="color:var(--muted);font-size:0.75rem">Within each term, payments clear arrears first, then the term fee. Surplus credits the next term.</small>
+        </div>
+        <div class="form-group">
+          <label>Payment confirmation (M-Pesa / Bank message)</label>
+          <textarea id="payNotes" rows="3" placeholder="Paste M-Pesa or bank confirmation message here"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Receipt from school (photo or PDF)</label>
+          <input type="file" id="payFile" accept="image/*,.pdf">
+          <small style="color:var(--muted);font-size:0.75rem">Stored locally on this device (keep files reasonably small)</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('paymentModal')">Cancel</button>
+        <button class="btn btn-success" id="savePaymentBtn" onclick="savePayment()">Save Payment</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal" style="max-width:640px">
+      <div class="modal-header">
+        <h3>Settings & Data</h3>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('settingsModal')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Edit fees payable & opening arrears</label>
+          <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem">
+            Change any pre-filled figure below. Opening arrears and term/yearly fees are fully editable. Set a field to 0 to clear it. Changes apply to the year selected in the header.
+          </p>
+          <div id="feeEditor"></div>
+        </div>
+        <hr style="margin:1.25rem 0;border:none;border-top:1px solid var(--border)">
+        <div class="form-group">
+          <label>Data Management</label>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem">
+            <button class="btn btn-outline btn-sm" onclick="exportData()">Export JSON Backup</button>
+            <button class="btn btn-outline btn-sm" onclick="document.getElementById('importFile').click()">Import JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+            <button class="btn btn-danger btn-sm" onclick="if(confirm('Reset ALL data to default 2026 structures? This cannot be undone.')) resetData()">Reset to Defaults</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="closeModal('settingsModal'); renderAll()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail / Summary Modal -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal" style="max-width:720px">
+      <div class="modal-header">
+        <h3 id="detailTitle">Detail</h3>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('detailModal')">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- Fees & Arrears editor (per child or all) -->
+  <div class="modal-overlay" id="feesArrearsModal">
+    <div class="modal" style="max-width:560px">
+      <div class="modal-header">
+        <h3 id="feesArrearsTitle">Edit Fees & Arrears</h3>
+        <button class="btn btn-sm btn-outline" onclick="closeModal('feesArrearsModal')">✕</button>
+      </div>
+      <div class="modal-body" id="feesArrearsBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('feesArrearsModal')">Cancel</button>
+        <button class="btn btn-success" onclick="saveFeesArrearsModal()">Save &amp; Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
